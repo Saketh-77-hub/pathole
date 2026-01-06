@@ -1,0 +1,15 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# AI training
+ai_service/dataset/
+ai_service/runs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Env
+.env
