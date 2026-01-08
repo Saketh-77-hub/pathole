@@ -14,13 +14,16 @@ const potholeSchema = new mongoose.Schema(
       max: 100
     },
 
+    // ✅ CHANGE THIS
     location: {
-      latitude: {
-        type: Number,
-        required: true
+      type: {
+        type: String,
+        enum: ["Point"],
+        required: true,
+        default: "Point"
       },
-      longitude: {
-        type: Number,
+      coordinates: {
+        type: [Number], // [longitude, latitude]
         required: true
       }
     },
@@ -37,12 +40,10 @@ const potholeSchema = new mongoose.Schema(
       default: "reported"
     }
   },
-  {
-    timestamps: true
-  }
+  { timestamps: true }
 );
 
-const Pothole =
-  mongoose.models.Pothole || mongoose.model("Pothole", potholeSchema);
+// ✅ REQUIRED for geospatial queries
+potholeSchema.index({ location: "2dsphere" });
 
-export default Pothole;
+export default mongoose.model("Pothole", potholeSchema);

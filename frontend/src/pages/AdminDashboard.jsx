@@ -18,7 +18,6 @@ const AdminDashboard = () => {
   const fetchPotholes = async () => {
     try {
       setLoading(true);
-
       const res = await axios.get(
         "http://localhost:5000/api/admin/potholes",
         {
@@ -28,10 +27,8 @@ const AdminDashboard = () => {
           params: { status, sort },
         }
       );
-
       setPotholes(res.data.potholes);
     } catch (err) {
-      console.error(err);
       alert("Failed to fetch potholes");
     } finally {
       setLoading(false);
@@ -49,8 +46,7 @@ const AdminDashboard = () => {
           },
         }
       );
-
-      fetchPotholes(); // refresh list
+      fetchPotholes();
     } catch (err) {
       alert("Failed to update status");
     }
@@ -60,74 +56,101 @@ const AdminDashboard = () => {
     fetchPotholes();
   }, [status, sort]);
 
+  // 📊 COUNTS
+  const reportedCount = potholes.filter(p => p.status === "reported").length;
+  const inProgressCount = potholes.filter(p => p.status === "in-progress").length;
+  const fixedCount = potholes.filter(p => p.status === "fixed").length;
+
   return (
-    <div className="p-6 bg-gray-100 min-h-screen">
-      <h1 className="text-3xl font-bold mb-6">Admin Dashboard</h1>
+    <div className="flex min-h-screen bg-gray-100">
+      
+      {/* ⬅️ LEFT SIDEBAR */}
+      <aside className="w-72 bg-white shadow-lg p-6 flex flex-col justify-between">
+        <div>
+          <h2 className="text-2xl font-bold mb-6 text-gray-800">
+            Admin Panel
+          </h2>
 
-      {/* FILTERS */}
-      <div className="flex gap-4 mb-6">
-        <select
-          className="p-2 border rounded"
-          value={status}
-          onChange={(e) => setStatus(e.target.value)}
+          <div className="space-y-4">
+            <StatCard title="Total Potholes" value={potholes.length} color="bg-blue-600" />
+            <StatCard title="Reported" value={reportedCount} color="bg-red-600" />
+            <StatCard title="In Progress" value={inProgressCount} color="bg-yellow-500" />
+            <StatCard title="Fixed" value={fixedCount} color="bg-green-600" />
+          </div>
+        </div>
+
+        {/* LOGOUT */}
+        <button
+          onClick={() => {
+            localStorage.clear();
+            window.location.href = "/";
+          }}
+          className="mt-6 bg-red-600 text-white py-2 rounded hover:bg-red-700"
         >
-          <option value="">All Status</option>
-          <option value="reported">Reported</option>
-          <option value="in-progress">In Progress</option>
-          <option value="fixed">Fixed</option>
-        </select>
+          Logout
+        </button>
+      </aside>
 
-        <select
-          className="p-2 border rounded"
-          value={sort}
-          onChange={(e) => setSort(e.target.value)}
-        >
-          <option value="">Sort by Severity</option>
-          <option value="low">Low → High</option>
-          <option value="high">High → Low</option>
-        </select>
-      </div>
+      {/* ➡️ RIGHT CONTENT */}
+      <main className="flex-1 p-8">
+        <h1 className="text-3xl font-bold mb-6">Pothole Reports</h1>
 
-      {/* LIST */}
-      {loading ? (
-        <p>Loading...</p>
-      ) : potholes.length === 0 ? (
-        <p>No potholes found</p>
-      ) : (
-        <div className="grid gap-4">
-          {potholes.map((p) => (
-            <div
-              key={p._id}
-              className="bg-white p-4 rounded shadow flex justify-between items-center"
-            >
-              {/* LEFT INFO */}
-              <div>
-                <p className="font-semibold">
-                  Severity:{" "}
-                  <span className="text-red-600">{p.severity}</span>
-                </p>
-                <p className="text-sm text-gray-500">
-                  Location: {p.location.latitude}, {p.location.longitude}
-                </p>
-                <p className="text-sm">
-                  Reported by: {p.detectedBy?.name}
-                </p>
-              </div>
+        {/* FILTERS */}
+        <div className="flex gap-4 mb-6">
+          <select
+            className="p-2 border rounded"
+            value={status}
+            onChange={(e) => setStatus(e.target.value)}
+          >
+            <option value="">All Status</option>
+            <option value="reported">Reported</option>
+            <option value="in-progress">In Progress</option>
+            <option value="fixed">Fixed</option>
+          </select>
 
-              {/* STATUS + IMAGE */}
-              <div className="flex items-center gap-4">
-                {/* STATUS */}
-                <div className="flex flex-row items-center gap-2">
+          <select
+            className="p-2 border rounded"
+            value={sort}
+            onChange={(e) => setSort(e.target.value)}
+          >
+            <option value="">Sort by Severity</option>
+            <option value="low">Low → High</option>
+            <option value="high">High → Low</option>
+          </select>
+        </div>
+
+        {/* LIST */}
+        {loading ? (
+          <p>Loading...</p>
+        ) : potholes.length === 0 ? (
+          <p>No potholes found</p>
+        ) : (
+          <div className="grid gap-4">
+            {potholes.map((p) => (
+              <div
+                key={p._id}
+                className="bg-white p-4 rounded-lg shadow flex justify-between items-center"
+              >
+                {/* INFO */}
+                <div>
+                  <p className="font-semibold">
+                    Severity: <span className="text-red-600">{p.severity}</span>
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    Reported by: {p.detectedBy?.name}
+                  </p>
+                </div>
+
+                {/* STATUS + IMAGE */}
+                <div className="flex items-center gap-4">
                   <span
-                    className={`text-white text-xs px-3  py-1 mr-4 rounded-full ${
-                      statusColors[p.status]
-                    }`}
+                    className={`text-white text-xs px-3 py-1 rounded-full ${statusColors[p.status]}`}
                   >
                     {p.status}
                   </span>
 
                   <select
-                    className="border p-1 rounded text-sm ml-4"
+                    className="border p-1 rounded text-sm"
                     value={p.status}
                     onChange={(e) =>
                       updateStatus(p._id, e.target.value)
@@ -137,21 +160,28 @@ const AdminDashboard = () => {
                     <option value="in-progress">In Progress</option>
                     <option value="fixed">Fixed</option>
                   </select>
-                </div>
 
-                {/* IMAGE */}
-                <img
-                  src={`http://localhost:5000${p.imageUrl}`}
-                  alt="pothole"
-                  className="w-32 h-20 object-cover rounded"
-                />
+                  <img
+                    src={`http://localhost:5000${p.imageUrl}`}
+                    alt="pothole"
+                    className="w-32 h-20 object-cover rounded"
+                  />
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
-      )}
+            ))}
+          </div>
+        )}
+      </main>
     </div>
   );
 };
+
+/* 📦 SMALL STAT CARD COMPONENT */
+const StatCard = ({ title, value, color }) => (
+  <div className={`p-4 rounded-lg text-white ${color}`}>
+    <p className="text-sm">{title}</p>
+    <h3 className="text-2xl font-bold">{value}</h3>
+  </div>
+);
 
 export default AdminDashboard;
