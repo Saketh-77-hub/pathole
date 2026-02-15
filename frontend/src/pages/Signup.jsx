@@ -10,22 +10,47 @@ const Signup = () => {
 
   const navigate = useNavigate();
 
-  const handleSignup = async (e) => {
-    e.preventDefault();
+const handleSignup = async (e) => {
+  e.preventDefault();
+  setError("");
 
-    try {
-      await axios.post("http://localhost:5000/api/auth/register", {
-        name,
-        email,
-        password,
-      });
+  // Name validation (minimum 3 characters, only letters & spaces)
+  const nameRegex = /^[A-Za-z ]{3,}$/;
+  if (!nameRegex.test(name.trim())) {
+    return setError("Name must be at least 3 characters and contain only letters");
+  }
 
-      alert("Account created. Please login.");
-      navigate("/");
-    } catch (err) {
-      setError(err.response?.data?.message || "Signup failed");
-    }
-  };
+  // Gmail validation
+  const gmailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
+  if (!gmailRegex.test(email)) {
+    return setError("Please enter a valid Gmail address");
+  }
+
+  // Strong password validation
+  // Minimum 8 characters, 1 uppercase, 1 lowercase, 1 number, 1 special character
+  const passwordRegex =
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/;
+
+  if (!passwordRegex.test(password)) {
+    return setError(
+      "Password must be 8+ characters with uppercase, lowercase, number & special character"
+    );
+  }
+
+  try {
+    await axios.post("http://localhost:5000/api/auth/register", {
+      name,
+      email,
+      password,
+    });
+
+    alert("Account created successfully. Please login.");
+    navigate("/");
+  } catch (err) {
+    setError(err.response?.data?.message || "Signup failed");
+  }
+};
+
 
   return (
     <div className="min-h-screen flex items-center justify-center 
